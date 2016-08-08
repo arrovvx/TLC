@@ -38,7 +38,6 @@ def startServer(msgHandler): #
 
 def getEntry(signalGroupID):
 	global signalCursor;
-	resetCursor()
 	
 	result = db.signals.find_one({"signalGroupID":signalGroupID,"timeStamp":{"$gt": signalCursor}})
 	if result:

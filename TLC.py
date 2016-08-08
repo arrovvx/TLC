@@ -1,4 +1,4 @@
-import thinkINTF as think
+import TLCINTF as TLC
 import json
 
 
@@ -7,14 +7,14 @@ def handleData(self, x):
 	#do AI stuff here for dynamic learning
 	print x
 
-think.startServer(handleData)
+TLC.startServer(handleData)
 
 
 
 #if just want to pull mongodb data
 #just call getEntry with the signalGroupID use to tag the signals
-#syntax: think.getEntry(signalGroupID)
-# e.g. think.getEntry(1469759618440)
+#syntax: TLC.getEntry(signalGroupID)
+# e.g. TLC.getEntry(1469759618440)
 
-#***MAKE SURE YOU CHANGE THE MONGODB IP ADDRESS IN thinkINTF.py***
+#***MAKE SURE YOU CHANGE THE MONGODB IP ADDRESS IN TLCINTF.py***
 

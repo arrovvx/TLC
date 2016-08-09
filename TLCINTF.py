@@ -5,7 +5,7 @@ import tornado.websocket
 import tornado.template
 from pymongo import MongoClient
 
-client = MongoClient('mongodb://192.168.99.100:27017/')
+client = MongoClient('mongodb://dockerhost:27017/')
 db = client.EMG
 
 signalGroupID = 0;
@@ -32,7 +32,7 @@ def startServer(msgHandler): #
 	application = tornado.web.Application([
 	  (r'/', WSHandler),
 	])
-	application.listen(8888)
+	application.listen(8890)
 	tornado.ioloop.IOLoop.instance().start()
 
 

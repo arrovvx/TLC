@@ -4,8 +4,10 @@ import json
 
 #start the websocket server
 def handleData(self, x):
-	#do AI stuff here for dynamic learning
-	print x
+	#do AI stuff here for dynamic learning, send response back as integer of the the class, index = 0, middle = 1, ring = 2, pinky = 3
+	print(x)
+	#self.write_message('{"output": 1}')
+	return 2
 
 TLC.startServer(handleData)
 

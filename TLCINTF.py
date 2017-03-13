@@ -5,12 +5,21 @@ import tornado.websocket
 import tornado.template
 from pymongo import MongoClient
 
-client = MongoClient('mongodb://dockerhost:27017/')
+client = MongoClient('mongodb://192.168.99.100:27017/')#dockerhost
 db = client.EMG
 
 signalGroupID = 0;
 signalCursor = 0;
 
+
+#this is just for dev
+is_closing = False
+def try_exit(): 
+    global is_closing
+    if is_closing:
+        # clean up here
+        tornado.ioloop.IOLoop.instance().stop()
+        logging.info('exit success')
 
 def startServer(msgHandler): #
 	class WSHandler(tornado.websocket.WebSocketHandler):
@@ -18,21 +27,22 @@ def startServer(msgHandler): #
 			return True
 
 		def open(self):
-			print 'connection opened...'
-			self.write_message("The server says: 'Hello'. Connection was accepted.")
+			print('connection opened...')
+			#self.write_message("The server says: 'Hello'. Connection was accepted.")
 
 		def on_message(self, message):
-			msgHandler(self, message)
-			#self.write_message("2")#The server says: " + message + " back at you
-			print 'received:', message
+			response = msgHandler(self, message)
+			self.write_message('{"output": '+ str(response) + '}')#The server says: " + message + " back at you
+			print('received:', message)
 
 		def on_close(self):
-			print 'connection closed...'
+			print('connection closed...')
 			
 	application = tornado.web.Application([
 	  (r'/', WSHandler),
 	])
 	application.listen(8890)
+	tornado.ioloop.PeriodicCallback(try_exit, 1000).start() 
 	tornado.ioloop.IOLoop.instance().start()
 
 

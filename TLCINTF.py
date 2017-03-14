@@ -1,28 +1,43 @@
-
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
 import tornado.template
+
+import json
+import numpy as np
+import pywt as pywt
+import threading
+
 from pymongo import MongoClient
 
-client = MongoClient('mongodb://192.168.99.100:27017/')#dockerhost
-db = client.EMG
+with open('settings.json') as settings_file:    
+    settings = json.load(settings_file)
 
-signalGroupID = 0;
-signalCursor = 0;
+#wavelet transform constants
+shiftSpeed = settings['shiftSpeed']
+windowSize = settings['windowSize']
 
+#wavelet transform variables
+shiftEnd = windowSize - shiftSpeed
+fillNum = windowSize // shiftSpeed
+transformWindow = [0] * windowSize
+targetWindow = [0] * windowSize
+runNum = 0
+bufferData = [0] * shiftSpeed
+bufferTarget = [0] * shiftSpeed
+curser = 0
 
-#this is just for dev
-is_closing = False
-def try_exit(): 
-    global is_closing
-    if is_closing:
-        # clean up here
-        tornado.ioloop.IOLoop.instance().stop()
-        logging.info('exit success')
+#mongoDB access variables
+client = MongoClient('mongodb://'+ str(settings['databaseIP']) +':'+ str(settings['databasePort']) +'/')
+db = client.EMG#[settings['databaseName']]
+signalGroupID = 0
+signalCursor = 0
 
-def startServer(msgHandler): #
+#start the websocket server
+def startServer(msgHandler):
+	
 	class WSHandler(tornado.websocket.WebSocketHandler):
+		
 		def check_origin(self, origin):
 			return True
 
@@ -31,9 +46,7 @@ def startServer(msgHandler): #
 			#self.write_message("The server says: 'Hello'. Connection was accepted.")
 
 		def on_message(self, message):
-			response = msgHandler(self, message)
-			self.write_message('{"output": '+ str(response) + '}')#The server says: " + message + " back at you
-			print('received:', message)
+			handleMsg(self, message, msgHandler)
 
 		def on_close(self):
 			print('connection closed...')
@@ -42,7 +55,7 @@ def startServer(msgHandler): #
 	  (r'/', WSHandler),
 	])
 	application.listen(8890)
-	tornado.ioloop.PeriodicCallback(try_exit, 1000).start() 
+	tornado.ioloop.PeriodicCallback(try_exit, 1000).start() #for dev exit in terminal
 	tornado.ioloop.IOLoop.instance().start()
 
 
@@ -64,10 +77,43 @@ def getEntry(signalGroupID):
 	
 def resetCursor():
 	signalCursor = 0;
+
+def handleMsg(self, message, callback):
+	global shiftEnd,bufferData,bufferTarget, fillNum, curser, buffer, transformWindow, targetWindow, runNum
 	
+	parsed_json = json.loads(message)
+	bufferData[curser] = parsed_json['input']
+	bufferTarget[curser] = parsed_json['output']
+	
+	curser += 1
+	if(curser == shiftSpeed):
+		curser = 0
+		transformWindow[shiftSpeed:] = transformWindow[:shiftEnd]
+		transformWindow[:shiftSpeed] = bufferData[:shiftSpeed]
+		
+		targetWindow[shiftSpeed:] = targetWindow[:shiftEnd]
+		targetWindow[:shiftSpeed] = bufferTarget[:shiftSpeed]
+		
+		if (runNum > fillNum):
+			Data = np.array(transformWindow)
+			Target = np.array(targetWindow)
+			aa, ff = pywt.cwt(Data[:,0], np.arange(1, 129), 'morl')
+			self.write_message('{"output": '+ str(callback(aa, Target)) + '}')
+			
+			#plt.matshow(aa) 
+			#plt.show()
+			#thr = threading.Thread(target=runNN, args=(self))#, kwargs={}
+			#thr.start() # will run "foo"
+		else:
+			runNum += 1
 
-
-
-
+#this is just for dev, to close the server in terminal
+is_closing = False
+def try_exit(): 
+    global is_closing
+    if is_closing:
+        # clean up here
+        tornado.ioloop.IOLoop.instance().stop()
+        logging.info('exit success')
 
 

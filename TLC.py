@@ -1,14 +1,20 @@
 import TLCINTF as TLC
-import json
+
+import numpy as np
+import scipy.io as sio
+import matplotlib.pyplot as plt
+import math as math
+import tensorflow as tf
 
 
+#this function is called everytime there is a batch of data (400 default, can be changed in settings.json)
+def handleData(Data,Target):
+	print(Data.shape)
+	return 3
+	
+
+	
 #start the websocket server
-def handleData(self, x):
-	#do AI stuff here for dynamic learning, send response back as integer of the the class, index = 0, middle = 1, ring = 2, pinky = 3
-	print(x)
-	#self.write_message('{"output": 1}')
-	return 2
-
 TLC.startServer(handleData)
 
 

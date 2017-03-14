@@ -1,0 +1,15 @@
+{
+	"_comment": "Please edit this accordingly on different systems. #dockerhost",
+	
+	"TLCWebsocketPort": 8890,
+	
+	"shiftSpeed": 400,
+	"windowSize": 1000,
+	
+	"databaseIP": "192.168.99.100",
+	"databasePort": 27017,
+	"databaseName": "EMG",
+	"mongoRetryPeriod" : 1000,
+	
+	"loggerLevel": "ERROR"
+}

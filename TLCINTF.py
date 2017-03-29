@@ -119,8 +119,10 @@ def handleMsg(self, message, callback):
 			for i in range(Data.shape[1] - 1):
 				aa, ff = pywt.cwt(Data[:,i + 1], np.arange(1, 129), 'morl')
 				DataArr = np.vstack([DataArr,[aa[:,300:700]]])
-				
-			self.write_message('{"output": '+ str(callback(DataArr, Target[300:700])) + '}')
+			
+			output = callback(DataArr, Target[300:700])
+			if output >= 0:
+				self.write_message('{"name" : "TLCOutput", "output": '+ str(output) + '}')
 			
 			#plt.matshow(aa) 
 			#plt.show()

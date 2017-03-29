@@ -43,6 +43,7 @@ def startServer(msgHandler):
 
 		def open(self):
 			print('connection opened...')
+			reInitVal()
 			#self.write_message("The server says: 'Hello'. Connection was accepted.")
 
 		def on_message(self, message):
@@ -54,7 +55,7 @@ def startServer(msgHandler):
 	application = tornado.web.Application([
 	  (r'/', WSHandler),
 	])
-	application.listen(8890)
+	application.listen(settings['TLCWebsocketPort']) 
 	tornado.ioloop.PeriodicCallback(try_exit, 1000).start() #for dev exit in terminal
 	tornado.ioloop.IOLoop.instance().start()
 
@@ -77,7 +78,21 @@ def getEntry(signalGroupID):
 	
 def resetCursor():
 	signalCursor = 0;
-
+	
+def reInitVal():
+	global windowSize,shiftSpeed,shiftEnd,bufferData,bufferTarget, fillNum, curser, buffer, transformWindow, targetWindow, runNum
+	
+	#wavelet transform variables
+	shiftEnd = windowSize - shiftSpeed
+	fillNum = windowSize // shiftSpeed
+	transformWindow = [0] * windowSize
+	targetWindow = [0] * windowSize
+	runNum = 0
+	bufferData = [0] * shiftSpeed
+	bufferTarget = [0] * shiftSpeed
+	curser = 0
+	
+	
 def handleMsg(self, message, callback):
 	global shiftEnd,bufferData,bufferTarget, fillNum, curser, buffer, transformWindow, targetWindow, runNum
 	
@@ -97,8 +112,15 @@ def handleMsg(self, message, callback):
 		if (runNum > fillNum):
 			Data = np.array(transformWindow)
 			Target = np.array(targetWindow)
+			
 			aa, ff = pywt.cwt(Data[:,0], np.arange(1, 129), 'morl')
-			self.write_message('{"output": '+ str(callback(aa, Target)) + '}')
+			DataArr = np.array([aa[:,300:700]])
+			
+			for i in range(Data.shape[1] - 1):
+				aa, ff = pywt.cwt(Data[:,i + 1], np.arange(1, 129), 'morl')
+				DataArr = np.vstack([DataArr,[aa[:,300:700]]])
+				
+			self.write_message('{"output": '+ str(callback(DataArr, Target[300:700])) + '}')
 			
 			#plt.matshow(aa) 
 			#plt.show()

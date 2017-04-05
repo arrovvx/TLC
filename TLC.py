@@ -9,6 +9,7 @@ import tensorflow as tf
 
 #this function is called everytime there is a batch of data (400 default, can be changed in settings.json)
 #return negetive value for cases where you don't want to return a prediction
+
 def handleData(Data,Target):
 	print(Data.shape)
 	return 3

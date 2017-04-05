@@ -28,10 +28,10 @@ bufferTarget = [0] * shiftSpeed
 curser = 0
 
 #mongoDB access variables
-client = MongoClient('mongodb://'+ str(settings['databaseIP']) +':'+ str(settings['databasePort']) +'/')
-db = client.EMG#[settings['databaseName']]
-signalGroupID = 0
-signalCursor = 0
+#client = MongoClient('mongodb://'+ str(settings['databaseIP']) +':'+ str(settings['databasePort']) +'/')
+#db = client.EMG#[settings['databaseName']]
+#signalGroupID = 0
+#signalCursor = 0
 
 #start the websocket server
 def startServer(msgHandler):
@@ -60,24 +60,24 @@ def startServer(msgHandler):
 	tornado.ioloop.IOLoop.instance().start()
 
 
-def getEntry(signalGroupID):
-	global signalCursor;
+#def getEntry(signalGroupID):
+#	global signalCursor;
+#	
+#	result = db.signals.find_one({"signalGroupID":signalGroupID,"timeStamp":{"$gt": signalCursor}})
+#	if result:
+#		signalCursor = result["timeStamp"]; #update the cursor with timestamp
+#		del result["_id"]
+#		#del result["timeStamp"]
+#		del result["signalGroupID"]
+#		
+#		print(result)
+#		
+#		return result
+#		
+#	return None
 	
-	result = db.signals.find_one({"signalGroupID":signalGroupID,"timeStamp":{"$gt": signalCursor}})
-	if result:
-		signalCursor = result["timeStamp"]; #update the cursor with timestamp
-		del result["_id"]
-		#del result["timeStamp"]
-		del result["signalGroupID"]
-		
-		print(result)
-		
-		return result
-		
-	return None
-	
-def resetCursor():
-	signalCursor = 0;
+#def resetCursor():
+#	signalCursor = 0;
 	
 def reInitVal():
 	global windowSize,shiftSpeed,shiftEnd,bufferData,bufferTarget, fillNum, curser, buffer, transformWindow, targetWindow, runNum
@@ -122,7 +122,7 @@ def handleMsg(self, message, callback):
 			
 			output = callback(DataArr, Target[300:700])
 			if output >= 0:
-				self.write_message('{"name" : "TLCOutput", "output": '+ str(output) + '}')
+				self.write_message('{"name" : "TLCOutput", "output": "%s"}' % str(output))
 			
 			#plt.matshow(aa) 
 			#plt.show()
